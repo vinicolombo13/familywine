@@ -3,13 +3,37 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#16211D">
+<meta name="theme-color" content="var(--glass-deep)">
 <title>FamilyWine</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:ital,wght@0,400..800;1,400..700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
-:root{--glass-deep:#16211D;--glass-mid:#243530;--paper:#EDEFEC;--card:#FFF;--ink:#16211D;
---muted:#77837E;--line:#D8DDD8;--borra:#6B2436;--ouro:#A8843F;--verde:#2E6A55;--r:5px}
+:root{
+--glass-deep:#1E1116;   /* borra de vinho no fundo da taça */
+--glass-mid:#311D25;
+--paper:#F2EEEC;        /* linho */
+--card:#FFF;
+--ink:#241419;
+--muted:#877076;
+--line:#E2D9D7;
+--borra:#8A2B41;        /* rubi */
+--ouro:#B0793A;         /* tawny */
+--jovem:#6A3A6B;        /* púrpura de vinho jovem */
+--r:5px}
+
+/* ── a marca ─────────────────────────────────────────── */
+.brand{display:flex;align-items:center;gap:8px}
+.mark{width:22px;height:22px;flex:none;color:currentColor;overflow:visible}
+.gate .brand{gap:12px;align-items:center}
+.gate .mark{width:44px;height:44px}
+/* o vinho assenta na taça ao abrir a tela de acesso */
+.gate .mark .pour{transform:translateY(26px);animation:assenta 1.15s cubic-bezier(.16,.84,.24,1) .12s forwards}
+@keyframes assenta{to{transform:translateY(0)}}
+/* ── chips de tipo com contraste correto ─────────────── */
+.chip.t.claro{color:#241419}
+/* ── o aro como indicador de prontidão ──────────────── */
+.win::before{content:'';display:inline-block;width:6px;height:6px;border-radius:99px;
+  background:currentColor;margin-right:5px;vertical-align:1px}
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{background:var(--paper);color:var(--ink);font-family:'Schibsted Grotesk',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
 body{padding-bottom:96px}
@@ -24,45 +48,45 @@ select{-webkit-appearance:none;appearance:none;background-image:linear-gradient(
 .hide{display:none!important}
 
 /* ===== login ===== */
-.gate{position:fixed;inset:0;background:var(--glass-deep);color:#EDEFEC;z-index:90;overflow-y:auto;display:flex;align-items:center;justify-content:center;padding:28px 18px}
+.gate{position:fixed;inset:0;background:var(--glass-deep);color:#F2EEEC;z-index:90;overflow-y:auto;display:flex;align-items:center;justify-content:center;padding:28px 18px}
 .gate-in{width:100%;max-width:370px}
 .gate .brand{font-weight:700;font-size:2.35rem;line-height:1;letter-spacing:-.045em;margin-bottom:10px}
 .gate .brand em{color:var(--ouro);font-style:normal}
-.gate .sub{font-size:.875rem;color:#8B9A94;margin-bottom:26px;line-height:1.5}
-.gate label span{display:block;margin-bottom:4px;color:#8B9A94}
-.gate input{background:#0E1614;border:1px solid #35473F;color:#F4F6F3;padding:13px 12px}
-.gate input::placeholder{color:#5F6E68}
+.gate .sub{font-size:.875rem;color:#A18D93;margin-bottom:26px;line-height:1.5}
+.gate label span{display:block;margin-bottom:4px;color:#A18D93}
+.gate input{background:#150C10;border:1px solid #432932;color:#F4F6F3;padding:13px 12px}
+.gate input::placeholder{color:#6F5860}
 .gate input:focus{border-color:var(--ouro);outline:none;box-shadow:0 0 0 2px rgba(168,132,63,.28)}
 .gate .f{margin-bottom:11px}
-.gate .go{width:100%;background:var(--ouro);color:#16211D;font-weight:700;font-size:.9375rem;letter-spacing:-.01em;padding:14px;border-radius:var(--r);margin-top:6px}
+.gate .go{width:100%;background:var(--ouro);color:var(--glass-deep);font-weight:700;font-size:.9375rem;letter-spacing:-.01em;padding:14px;border-radius:var(--r);margin-top:6px}
 .gate .go:disabled{opacity:.6}
-.gate .alt{width:100%;padding:11px;color:#8B9A94;font-size:.8125rem;font-weight:600;margin-top:2px}
+.gate .alt{width:100%;padding:11px;color:#A18D93;font-size:.8125rem;font-weight:600;margin-top:2px}
 .gate .msg{font-size:.8125rem;margin-top:12px;line-height:1.5;padding:11px;border-radius:var(--r);display:none}
 .gate .msg.show{display:block}
-.gate .msg.err{background:#3A1F23;color:#E8A9A4}
-.gate .msg.ok{background:#1B2E27;color:#8FC9AE}
-.gate .warn{font-size:.6875rem;color:#6E7C76;line-height:1.5;margin-top:24px;border-top:1px solid var(--glass-mid);padding-top:14px}
+.gate .msg.err{background:#43151F;color:#F0AEA6}
+.gate .msg.ok{background:#2C1B15;color:#DFBA8A}
+.gate .warn{font-size:.6875rem;color:#7C666D;line-height:1.5;margin-top:24px;border-top:1px solid var(--glass-mid);padding-top:14px}
 
 /* ===== topo ===== */
-.top{background:var(--glass-deep);color:#EDEFEC;position:sticky;top:0;z-index:40}
+.top{background:var(--glass-deep);color:#F2EEEC;position:sticky;top:0;z-index:40}
 .top .wrap{display:flex;align-items:center;justify-content:space-between;height:54px;gap:10px}
 .brand{font-weight:700;font-size:1.2rem;letter-spacing:-.04em}
 .brand em{color:var(--ouro);font-style:normal}
-.me{display:flex;align-items:center;gap:7px;background:var(--glass-mid);border-radius:99px;padding:5px 6px 5px 11px;font-size:.8125rem;font-weight:600;color:#EDEFEC}
+.me{display:flex;align-items:center;gap:7px;background:var(--glass-mid);border-radius:99px;padding:5px 6px 5px 11px;font-size:.8125rem;font-weight:600;color:#F2EEEC}
 .me .av{width:22px;height:22px;border-radius:99px;background:var(--borra);color:#fff;font-size:.625rem;font-weight:700;display:flex;align-items:center;justify-content:center}
 .tabs{background:var(--glass-deep);position:sticky;top:54px;z-index:39}
 .tabs .wrap{display:flex;gap:2px;padding-bottom:10px}
-.tab{padding:7px 13px;border-radius:var(--r);font-size:.8125rem;font-weight:500;color:#9AA8A2}
+.tab{padding:7px 13px;border-radius:var(--r);font-size:.8125rem;font-weight:500;color:#B09CA1}
 .tab[aria-selected="true"]{background:var(--glass-mid);color:#fff}
 
 /* ===== resumo ===== */
-.summary{background:var(--glass-deep);color:#EDEFEC;padding-bottom:22px}
+.summary{background:var(--glass-deep);color:#F2EEEC;padding-bottom:22px}
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
 .stat .v{font-family:'IBM Plex Mono',ui-monospace,monospace;font-weight:500;font-size:1.9rem;line-height:1;letter-spacing:-.055em}
-.stat .k{font-size:.625rem;font-weight:600;letter-spacing:.13em;text-transform:uppercase;color:#8B9A94;margin-top:3px}
+.stat .k{font-size:.625rem;font-weight:600;letter-spacing:.13em;text-transform:uppercase;color:#A18D93;margin-top:3px}
 .mix{display:flex;gap:3px;margin-top:18px;height:5px;border-radius:99px;overflow:hidden;background:var(--glass-mid)}
 .legend{display:flex;flex-wrap:wrap;gap:12px;margin-top:9px}
-.legend div{font-size:.6875rem;color:#9AA8A2;display:flex;align-items:center;gap:5px}
+.legend div{font-size:.6875rem;color:#B09CA1;display:flex;align-items:center;gap:5px}
 .dot{width:7px;height:7px;border-radius:99px;flex:none}
 
 /* ===== filtros / prateleira ===== */
@@ -71,7 +95,7 @@ select{-webkit-appearance:none;appearance:none;background-image:linear-gradient(
 .filters select{flex:0 1 auto;width:auto;padding-right:30px;font-size:.875rem}
 .shelf{list-style:none;margin-top:12px}
 .row{background:var(--card);border:1px solid var(--line);border-radius:var(--r);margin-bottom:8px;display:grid;grid-template-columns:62px 1fr;overflow:hidden}
-.safra{background:#F5F6F3;border-right:1px solid var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px 4px;gap:7px}
+.safra{background:#F9F5F4;border-right:1px solid var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px 4px;gap:7px}
 .safra .y{font-family:'IBM Plex Mono',ui-monospace,monospace;font-weight:500;font-size:1.0625rem;line-height:1;letter-spacing:-.04em}
 .safra .y.nv{font-size:.625rem;font-family:'Schibsted Grotesk';font-weight:700;color:var(--muted);letter-spacing:.1em}
 .rack{display:flex;gap:2px;height:13px;align-items:flex-end}
@@ -101,21 +125,21 @@ select{-webkit-appearance:none;appearance:none;background-image:linear-gradient(
 .stars{display:flex;gap:3px;margin-top:9px}
 .stars button{font-size:1.05rem;line-height:1;color:var(--line);padding:0}
 .stars button.on{color:var(--ouro)}
-.hnote{margin-top:8px;font-size:.8125rem;border:1px dashed var(--line);background:#FCFCFB;min-height:38px;resize:vertical}
+.hnote{margin-top:8px;font-size:.8125rem;border:1px dashed var(--line);background:#FDFBFA;min-height:38px;resize:vertical}
 
 /* ===== estatísticas ===== */
 .block{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin-bottom:9px}
 .block h3{font-size:.9375rem;font-weight:700;margin-bottom:13px;letter-spacing:-.02em}
 .bar{display:grid;grid-template-columns:1fr 90px 32px;align-items:center;gap:9px;margin-bottom:6px;font-size:.8125rem}
 .bar .bl{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.bar .bt{height:7px;background:#F0F2EF;border-radius:99px;overflow:hidden}
+.bar .bt{height:7px;background:#F4EDEC;border-radius:99px;overflow:hidden}
 .bar .bt i{display:block;height:100%;background:var(--borra);border-radius:99px}
 .bar .bn{text-align:right;font-weight:500;font-size:.6875rem}
 .kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;margin-bottom:9px}
 .kpi{background:#fff;padding:13px}
 .kpi .v{font-family:'IBM Plex Mono',ui-monospace,monospace;font-weight:500;font-size:1.4rem;line-height:1.05;letter-spacing:-.045em}
 .kpi .k{font-size:.625rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:3px}
-.rank{display:flex;justify-content:space-between;gap:10px;font-size:.8125rem;padding:6px 0;border-bottom:1px solid #F0F2EF}
+.rank{display:flex;justify-content:space-between;gap:10px;font-size:.8125rem;padding:6px 0;border-bottom:1px solid #F4EDEC}
 .rank:last-child{border:0}
 .rank .s{color:var(--ouro);font-weight:600;white-space:nowrap;letter-spacing:.04em}
 
@@ -156,18 +180,18 @@ label span{display:block;margin-bottom:4px}
 .spin{display:inline-block;width:13px;height:13px;border:2px solid var(--line);border-top-color:var(--borra);border-radius:99px;animation:sp .7s linear infinite;vertical-align:-2px}
 @keyframes sp{to{transform:rotate(360deg)}}
 .qbox{display:flex;border:1px solid var(--line);border-radius:var(--r);background:#fff;overflow:hidden}
-.qbox button{width:52px;padding:13px 0;font-size:1.2rem;font-weight:600;color:var(--borra);background:#FAFBFA}
+.qbox button{width:52px;padding:13px 0;font-size:1.2rem;font-weight:600;color:var(--borra);background:#FCF8F7}
 .qbox input{border:0;text-align:center;font-size:1.1rem;font-weight:600;border-left:1px solid var(--line);border-right:1px solid var(--line);border-radius:0}
 .stars.big button{font-size:1.9rem}
-.confirmbox{background:#FBF6F7;border:1px solid #E6D3D7;border-radius:var(--r);padding:12px;font-size:.8125rem;line-height:1.5;margin-top:16px}
+.confirmbox{background:#FCF4F5;border:1px solid #EBD5D9;border-radius:var(--r);padding:12px;font-size:.8125rem;line-height:1.5;margin-top:16px}
 .confirmbox b{color:var(--borra)}
 .tools{display:flex;justify-content:center;gap:18px;padding:28px 0 8px;flex-wrap:wrap}
 .tools button{font-size:.75rem;color:var(--muted);font-weight:600;text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px}
 .toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(12px);background:var(--glass-deep);color:#fff;font-size:.8125rem;padding:10px 16px;border-radius:99px;z-index:60;opacity:0;pointer-events:none;transition:.2s;max-width:88vw;text-align:center}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-.boot{position:fixed;inset:0;background:var(--glass-deep);z-index:95;display:flex;align-items:center;justify-content:center;color:#8B9A94;font-size:.8125rem;gap:9px}
+.boot{position:fixed;inset:0;background:var(--glass-deep);z-index:95;display:flex;align-items:center;justify-content:center;color:#A18D93;font-size:.8125rem;gap:9px}
 @media (max-width:420px){.stat .v{font-size:1.75rem}.grid{grid-template-columns:1fr}}
-@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}.gate .mark .pour{transform:none}}
 </style>
 </head>
 <body>
@@ -177,7 +201,13 @@ label span{display:block;margin-bottom:4px}
 <!-- ===================== ACESSO ===================== -->
 <div class="gate hide" id="gate">
   <div class="gate-in">
-    <div class="brand">Family<em>Wine</em></div>
+    <div class="brand"><svg class="mark" viewBox="0 0 64 64" aria-hidden="true"><defs>
+<linearGradient id="arg" x1=".1" y1="1" x2=".85" y2=".05">
+<stop offset="0" stop-color="#5E0F28"/><stop offset=".55" stop-color="#9E1B3D"/><stop offset="1" stop-color="#C64A52"/></linearGradient>
+<clipPath id="tcg"><circle cx="32" cy="32" r="23"/></clipPath></defs>
+<circle cx="32" cy="32" r="23" fill="none" stroke="currentColor" stroke-width="2.6" opacity=".8"/>
+<g clip-path="url(#tcg)" class="pour"><path d="M4 29C16 23 44 19 62 25L62 60 4 60Z" fill="url(#arg)"/>
+<path d="M4 29C16 23 44 19 62 25" fill="none" stroke="#E9C77F" stroke-width="1.4" opacity=".55"/></g></svg>Family<em>Wine</em></div>
     <p class="sub" id="gateSub">Cada pessoa da casa tem a sua adega, com o seu acervo e as suas notas de degustação.</p>
 
     <!-- entrar -->
@@ -228,7 +258,13 @@ label span{display:block;margin-bottom:4px}
 <!-- ===================== APP ===================== -->
 <div id="app" class="hide">
 <header class="top"><div class="wrap">
-  <div class="brand">Family<em>Wine</em></div>
+  <div class="brand"><svg class="mark" viewBox="0 0 64 64" aria-hidden="true"><defs>
+<linearGradient id="art" x1=".1" y1="1" x2=".85" y2=".05">
+<stop offset="0" stop-color="#5E0F28"/><stop offset=".55" stop-color="#9E1B3D"/><stop offset="1" stop-color="#C64A52"/></linearGradient>
+<clipPath id="tct"><circle cx="32" cy="32" r="23"/></clipPath></defs>
+<circle cx="32" cy="32" r="23" fill="none" stroke="currentColor" stroke-width="2.6" opacity=".8"/>
+<g clip-path="url(#tct)" class="pour"><path d="M4 29C16 23 44 19 62 25L62 60 4 60Z" fill="url(#art)"/>
+<path d="M4 29C16 23 44 19 62 25" fill="none" stroke="#E9C77F" stroke-width="1.4" opacity=".55"/></g></svg>Family<em>Wine</em></div>
   <button class="me" id="me"><span id="meName"></span><span class="av" id="meAv"></span></button>
 </div></header>
 <div class="tabs"><div class="wrap" role="tablist">
@@ -338,8 +374,8 @@ const SUPABASE_ANON = "sb_publishable_J7CZDwaMEc5_kmxx_sZrsA_eqx-FrHZ";
 
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON);
 
-const TIPOS=[{n:'Tinto',c:'#6B2436'},{n:'Branco',c:'#B8A344'},{n:'Rosé',c:'#C97A85'},
-  {n:'Espumante',c:'#3E7A6B'},{n:'Sobremesa',c:'#8A6A2F'},{n:'Fortificado',c:'#4A3352'}];
+const TIPOS=[{n:'Tinto',c:'#7A1F33'},{n:'Branco',c:'#B39331'},{n:'Rosé',c:'#C87683'},
+  {n:'Espumante',c:'#7E8A94'},{n:'Sobremesa',c:'#9A6B24'},{n:'Fortificado',c:'#63304A'}];
 const PAISES=['Argentina','Austrália','Áustria','Brasil','Chile','Espanha','França','Alemanha','Itália','Nova Zelândia','Portugal','África do Sul','Uruguai','EUA'];
 const ANO=new Date().getFullYear();
 const cor=t=>(TIPOS.find(x=>x.n===t)||{c:'#77837E'}).c;
@@ -455,10 +491,10 @@ async function salvarGarrafa(rec,id){
 /* ═══════════ JANELA DE GUARDA ═══════════ */
 function winState(x){
   if(!x.janela_ini)return null;
-  if(ANO<x.janela_ini)return{t:`Guardar até ${x.janela_ini}`,c:'#A8843F',k:'guardando',o:1};
-  if(ANO<x.janela_fim)return{t:'No ponto',c:'#2E6A55',k:'ponto',o:2};
-  if(ANO===x.janela_fim)return{t:'Beber este ano',c:'#6B2436',k:'agora',o:3};
-  return{t:`Passou do ponto (${x.janela_fim})`,c:'#77837E',k:'passou',o:4};
+  if(ANO<x.janela_ini)return{t:`Guardar até ${x.janela_ini}`,c:'#6A3A6B',k:'guardando',o:1};
+  if(ANO<x.janela_fim)return{t:'No ponto',c:'#A02C46',k:'ponto',o:2};
+  if(ANO===x.janela_fim)return{t:'Beber este ano',c:'#B0793A',k:'agora',o:3};
+  return{t:`Passou do ponto (${x.janela_fim})`,c:'#7A5C4A',k:'passou',o:4};
 }
 const winChip=x=>{const s=winState(x);return s?`<span class="win" style="color:${s.c};border-color:${s.c}">${s.t}</span>`:''};
 
@@ -513,7 +549,7 @@ function renderShelf(){
       <div class="body">
         <div class="name">${esc(x.nome)}</div>
         ${x.produtor?`<div class="prod">${esc(x.produtor)}</div>`:''}
-        <div class="meta"><span class="chip t" style="background:${cor(x.tipo)}">${esc(x.tipo)}</span>
+        <div class="meta"><span class="chip t${claro(x.tipo)}" style="background:${cor(x.tipo)}">${esc(x.tipo)}</span>
           ${x.uva?`<span class="chip">${esc(x.uva)}</span>`:''}${x.regiao?`<span class="chip">${esc(x.regiao)}</span>`:''}
           ${x.pais?`<span class="chip">${esc(x.pais)}</span>`:''}${x.classificacao?`<span class="chip">${esc(x.classificacao)}</span>`:''}
           ${winChip(x)}</div>
@@ -539,7 +575,7 @@ function renderHist(){
     <div class="hhead"><div><div class="name">${esc(x.nome)} ${x.safra?`<span class="num" style="color:var(--muted);font-weight:400">${x.safra}</span>`:''}</div>
       ${x.produtor?`<div class="prod">${esc(x.produtor)}</div>`:''}</div>
       <div class="hdate num">${dbr(x.data)}</div></div>
-    <div class="meta">${x.tipo?`<span class="chip t" style="background:${cor(x.tipo)}">${esc(x.tipo)}</span>`:''}
+    <div class="meta">${x.tipo?`<span class="chip t${claro(x.tipo)}" style="background:${cor(x.tipo)}">${esc(x.tipo)}</span>`:''}
       ${x.uva?`<span class="chip">${esc(x.uva)}</span>`:''}${x.pais?`<span class="chip">${esc(x.pais)}</span>`:''}</div>
     <div class="stars">${[1,2,3,4,5].map(n=>`<button class="${x.rating>=n?'on':''}" data-star="${x.id}" data-n="${n}" aria-label="${n} de 5">★</button>`).join('')}</div>
     <textarea class="hnote" data-note="${x.id}" rows="2" placeholder="Adicione ou edite o comentário">${esc(x.nota||'')}</textarea>
