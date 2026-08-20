@@ -385,7 +385,7 @@ const hoje=()=>new Date().toISOString().slice(0,10);
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const ini=n=>String(n||'?').trim().split(/\s+/).slice(0,2).map(w=>w[0]).join('').toUpperCase();
 const el=id=>document.getElementById(id);
-let user=null, perfil='', db={bottles:[],tastings:[]}, editId=null, drinkId=null, dRating=0, fichaPendente=null;
+let user=null, perfil='', db={bottles:[],tastings:[]}, editId=null, drinkId=null, dRating=0, fichaPendente=null, salvando=false, tomando=false;
 function toast(m){const t=el('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2600);}
 function gmsg(txt,tipo){const m=el('gateMsg');m.textContent=txt;m.className='msg show '+(tipo||'err');}
 function gclear(){el('gateMsg').className='msg';}
@@ -460,11 +460,14 @@ function mostrarGate(){el('boot').classList.add('hide');el('app').classList.add(
 async function abrirApp(){
   recuperando=false;
   el('gate').classList.add('hide');el('boot').classList.remove('hide');
-  const {data}=await sb.from('profiles').select('nome').eq('id',user.id).maybeSingle();
-  perfil=(data&&data.nome)||user.user_metadata?.nome||user.email.split('@')[0];
+  try{
+    const {data}=await sb.from('profiles').select('nome').eq('id',user.id).maybeSingle();
+    perfil=(data&&data.nome)||user.user_metadata?.nome||user.email.split('@')[0];
+  }catch(e){perfil=user.email.split('@')[0];}
   el('meName').textContent=perfil.split(' ')[0];
   el('meAv').textContent=ini(perfil);
-  await carregar();
+  try{ await carregar(); }
+  catch(e){ toast('Erro ao carregar: '+(e.message||e)); }
   el('boot').classList.add('hide');el('app').classList.remove('hide');
 }
 (async()=>{const {data}=await sb.auth.getSession();
@@ -639,7 +642,14 @@ function renderStat(){
   ${mediaPor('uva').length?`<div class="block"><h3>Uvas que você gosta mais</h3>${mediaPor('uva').map(([k,v,n])=>`<div class="rank"><span>${esc(k)} <small style="color:var(--muted)">${n} garrafas</small></span><span class="s">${v.toFixed(1)}</span></div>`).join('')}</div>`:''}
   ${mediaPor('pais').length?`<div class="block"><h3>Países que você gosta mais</h3>${mediaPor('pais').map(([k,v,n])=>`<div class="rank"><span>${esc(k)} <small style="color:var(--muted)">${n} garrafas</small></span><span class="s">${v.toFixed(1)}</span></div>`).join('')}</div>`:''}`;
 }
-function render(){fillOptions();renderSummary();renderShelf();renderHist();renderStat();}
+function render(){
+  const etapas=[['opções',fillOptions],['resumo',renderSummary],['prateleira',renderShelf],
+                ['degustações',renderHist],['estatísticas',renderStat]];
+  for(const [nome,fn] of etapas){
+    try{fn();}
+    catch(e){console.error('Falha ao desenhar',nome,e);toast('Erro em '+nome+': '+(e.message||e));}
+  }
+}
 
 /* ═══════════ FOLHA DE CADASTRO ═══════════ */
 function fold(btn,grp,abrir){
@@ -682,14 +692,19 @@ el('save').onclick=async()=>{
     preco:parseFloat(g('preco').replace(/\./g,'').replace(',','.'))||null,
     local_compra:g('local_compra')||null,data_compra:g('data_compra')||null,obs:g('obs')||null};
   if(fichaPendente)Object.assign(rec,aplicarFicha(fichaPendente));
-  const b=el('save');b.disabled=true;
-  const alvo=await salvarGarrafa(rec,editId);
-  b.disabled=false;
+  if(salvando)return;
+  salvando=true;
+  const b=el('save');b.disabled=true;b.textContent='Salvando…';
+  let alvo=null;
+  try{ alvo=await salvarGarrafa(rec,editId); }
+  catch(e){ toast('Não deu para salvar: '+(e.message||e)); }
+  salvando=false;b.disabled=false;b.textContent='Salvar na adega';
   if(!alvo)return;
   const era=editId,precisaFicha=!fichaPendente&&alvo.ficha!=='ok';
   fichaPendente=null;
-  render();closeSheet();
+  closeSheet();
   toast(era?'Vinho atualizado.':'Guardado na adega.');
+  render();
   if(precisaFicha)ficharVinho(alvo.id);
 };
 el('cancel').onclick=closeSheet;
@@ -728,12 +743,15 @@ el('dGo').onclick=async()=>{
   const w=db.bottles.find(x=>x.id===drinkId);if(!w)return;
   const n=Math.min(Math.max(1,parseInt(el('dQtd').value)||1),w.qtd);
   const data=el('dData').value||hoje(),nota=el('dNota').value.trim()||null;
-  const btn=el('dGo');btn.disabled=true;
+  if(tomando)return;
+  tomando=true;
+  const btn=el('dGo');btn.disabled=true;btn.textContent='Registrando…';
   const linhas=Array.from({length:n},()=>({user_id:user.id,bottle_id:w.id,nome:w.nome,produtor:w.produtor,
     safra:w.safra,tipo:w.tipo,pais:w.pais,regiao:w.regiao,uva:w.uva,preco:w.preco,adega:w.adega,
     data,rating:dRating,nota}));
   const ins=await sb.from('tastings').insert(linhas).select();
-  if(ins.error){btn.disabled=false;return toast('Não deu para registrar: '+ins.error.message);}
+  if(ins.error){tomando=false;btn.disabled=false;btn.textContent='Confirmar que tomei';
+    return toast('Não deu para registrar: '+ins.error.message);}
   if(w.qtd-n<=0){
     const {error}=await sb.from('bottles').delete().eq('id',w.id);
     if(!error)db.bottles=db.bottles.filter(x=>x.id!==w.id);
@@ -742,8 +760,10 @@ el('dGo').onclick=async()=>{
     if(!error)w.qtd-=n;
   }
   db.tastings=[...ins.data,...db.tastings].sort((a,b)=>String(b.data).localeCompare(String(a.data)));
-  btn.disabled=false;render();closeDrink();
+  tomando=false;btn.disabled=false;btn.textContent='Confirmar que tomei';
+  closeDrink();
   toast(`${n} garrafa${n>1?'s':''} de ${w.nome} registrada${n>1?'s':''}.`);
+  render();
 };
 
 /* ═══════════ AÇÕES ═══════════ */
@@ -870,6 +890,9 @@ el('exp').onclick=()=>{
   a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
   a.download='familywine-'+perfil.split(' ')[0].toLowerCase()+'.csv';a.click();URL.revokeObjectURL(a.href);
 };
+
+window.addEventListener('error',e=>{console.error(e.error||e.message);});
+window.addEventListener('unhandledrejection',e=>{console.error('Promessa rejeitada:',e.reason);});
 
 /* ═══════════ INÍCIO ═══════════ */
 el('f_tipo').innerHTML=TIPOS.map(t=>`<option>${t.n}</option>`).join('');
